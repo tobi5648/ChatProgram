@@ -4,9 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UI"
+        WindowStartupLocation="CenterScreen"
+        Background="DarkBlue"
         mc:Ignorable="d"
         Title="Chatroom" Height="300" Width="300">
     <Grid>
-        
+        <TextBox x:Name="txtChatBox" Margin="10,10,19,72" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" />
+        <TextBox x:Name="txtMessageBox" Margin="10,202,73,21" TextWrapping="Wrap" />
+        <Button x:Name="btnSendMessage" Content="Send" HorizontalAlignment="Left" Margin="224,202,0,0" VerticalAlignment="Top" Width="49" Height="46"/>
+
     </Grid>
 </Window>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,7 +20,10 @@ namespace UI
     /// </summary>
     public partial class Chatroom : Window
     {
-        public Chatroom()
+
+        public static Socket master;
+
+        public Chatroom(string username)
         {
             InitializeComponent();
         }

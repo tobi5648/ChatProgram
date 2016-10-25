@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace DatabaseAccess
 {
@@ -32,7 +33,22 @@ namespace DatabaseAccess
         private SqlDataReader reader;
 
         public StoredProcedureType storedProcedureType;
+
+        public string StoredProcedureQuery
+        {
+            get
+            {
+                return storedProcedureQuery;
+            }
+
+            set
+            {
+                storedProcedureQuery = value;
+            }
+        }
         #endregion
+
+
 
         public Access()
         {
@@ -43,7 +59,7 @@ namespace DatabaseAccess
                 connection.Open();
                 connection.Close();
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 //Logger.LogException(ex.Message);
                 throw;
@@ -57,16 +73,68 @@ namespace DatabaseAccess
         /// <param name="username">the users username</param>
         /// <param name="password">the users password</param>
         /// <returns>The username and password, and tru/false depending on existance</returns>
-        public bool CheckForUser(string username, string password)
+        public bool CheckForUser(out bool correctPassword, out bool passwordUsed, string username, string password = null)
         {
+            if (SetUp(out correctPassword, out passwordUsed, username, password) == true)
+                return true;
+            return false;
+        }
+
+        private bool SetUp(out bool correctPassword, out bool passwordUsed, string username, string password = null)
+        {
+            string expectedUsername = string.Empty;
+            string expectedPassword = string.Empty;
+            StoredProcedureQuery = "CheckForUserWithPassword";
+            if (password == null)
+                StoredProcedureQuery = "CheckForUserWithoutPassword";
             try
             {
+                correctPassword = false;
+                passwordUsed = false;
                 using (connection)
                 {
                     connection.Open();
                     reader = null;
+                    using (command = new SqlCommand(StoredProcedureQuery, connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(new SqlParameter("@username", SqlDbType.NVarChar)).Value = username;
+                        if (password != null)
+                            command.Parameters.Add(new SqlParameter("@password", SqlDbType.NVarChar)).Value = password;
+                        reader = command.ExecuteReader();
+                        try
+                        {
+                            while (reader.Read())
+                            {
+                                expectedUsername = reader["username"].ToString();
+                                if (password != null)
+                                    expectedPassword = reader["userpassword"].ToString();
+                            }
+                            if (expectedUsername == username)
+                            {
+                                if (password != null)
+                                    passwordUsed = true;
+                                if (expectedPassword == password)
+                                    correctPassword = true;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        catch(SqlException) { throw; }
+                    }
                 }
             }
+            catch (ObjectDisposedException) { throw; }
+            catch (InvalidOperationException) { throw; }
+            catch (SqlException) { throw; }
+            catch (System.Configuration.ConfigurationException) { throw; }
+            catch (ArgumentNullException) { throw; }
+            catch (ArgumentException) { throw; }
+            catch (InvalidCastException) { throw; }
+            catch (System.IO.IOException) { throw; }
         }
     }
 }

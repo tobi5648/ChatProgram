@@ -21,7 +21,7 @@ namespace UI
     /// </summary>
     public partial class MainWindow : Window
     {
-        LogInController login;
+        public LogInController login = new LogInController();
         public MainWindow()
         {
             InitializeComponent();
@@ -48,9 +48,26 @@ namespace UI
 
         private void btnLogIn_Click(object sender, RoutedEventArgs e)
         {
-            if (login.Attempt(txtUsernameBox.Text, txtPasswordBox.Text))
+            string message;
+            if (login.Attempt(out message, txtUsernameBox.Text, txtPasswordBox.Text))
             {
+                MessageBoxResult mbr = MessageBox.Show(message, "Message", MessageBoxButton.OKCancel);
+                if (mbr == MessageBoxResult.Cancel)
+                {
+                    MessageBox.Show("Did not login");
+                }
+                else if (mbr == MessageBoxResult.OK)
+                {
+                    this.Hide();
+                    Chatroom cr = new Chatroom(txtUsernameBox.Text);
+                    cr.ShowDialog();
 
+
+                }
+            }
+            else if (!login.Attempt(out message, txtUsernameBox.Text, txtPasswordBox.Text))
+            {
+                MessageBox.Show(message, "Failed Logon", MessageBoxButton.OK);
             }
         }
     }
